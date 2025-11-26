@@ -70,8 +70,17 @@ success "バックエンドをダウンロードしました"
 
 info "フロントエンドをダウンロード中..."
 curl -fSL "$BASE_URL/lmlight-web.tar.gz" -o "/tmp/lmlight-web.tar.gz"
-tar -xzf "/tmp/lmlight-web.tar.gz" -C "$INSTALL_DIR/frontend"
+
+# 作業ディレクトリで展開してから移動
+WORK_DIR="/tmp/lmlight-web-$$"
+mkdir -p "$WORK_DIR"
+tar -xzf "/tmp/lmlight-web.tar.gz" -C "$WORK_DIR"
+
+# frontendディレクトリを置き換え
+rm -rf "$INSTALL_DIR/frontend"
+mv "$WORK_DIR" "$INSTALL_DIR/frontend"
 rm /tmp/lmlight-web.tar.gz
+
 success "フロントエンドをダウンロードしました"
 
 # ============================================================
