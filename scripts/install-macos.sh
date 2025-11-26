@@ -443,50 +443,6 @@ chmod +x "$INSTALL_DIR/scripts/stop.sh"
 ln -sf "$INSTALL_DIR/scripts/start.sh" "$INSTALL_DIR/start.sh"
 ln -sf "$INSTALL_DIR/scripts/stop.sh" "$INSTALL_DIR/stop.sh"
 
-# ============================================================
-# デスクトップアプリケーション作成
-# ============================================================
-info "デスクトップショートカットを作成中..."
-
-APP_DIR="$HOME/Applications/LM Light.app"
-mkdir -p "$APP_DIR/Contents/MacOS"
-mkdir -p "$APP_DIR/Contents/Resources"
-
-# Info.plist 作成
-cat > "$APP_DIR/Contents/Info.plist" << 'EOF'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>CFBundleExecutable</key>
-    <string>LM Light</string>
-    <key>CFBundleIdentifier</key>
-    <string>app.lmlight</string>
-    <key>CFBundleName</key>
-    <string>LM Light</string>
-    <key>CFBundleVersion</key>
-    <string>1.0.0</string>
-    <key>CFBundleShortVersionString</key>
-    <string>1.0.0</string>
-    <key>LSMinimumSystemVersion</key>
-    <string>10.15</string>
-    <key>NSHighResolutionCapable</key>
-    <true/>
-</dict>
-</plist>
-EOF
-
-# 起動スクリプト作成
-cat > "$APP_DIR/Contents/MacOS/LM Light" << EOF
-#!/bin/bash
-"$INSTALL_DIR/start.sh"
-sleep 2
-open http://localhost:3000
-EOF
-chmod +x "$APP_DIR/Contents/MacOS/LM Light"
-
-success "デスクトップアプリケーションを作成しました: ~/Applications/LM Light.app"
-
 echo ""
 echo -e "${GREEN}╔═══════════════════════════════════════════════════════╗${NC}"
 echo -e "${GREEN}║     LM Light のインストールが完了しました！          ║${NC}"

@@ -423,33 +423,6 @@ Set-Content -Path "$INSTALL_DIR\scripts\stop.ps1" -Value $STOP_SCRIPT -Encoding 
 Copy-Item "$INSTALL_DIR\scripts\start.ps1" "$INSTALL_DIR\start.ps1"
 Copy-Item "$INSTALL_DIR\scripts\stop.ps1" "$INSTALL_DIR\stop.ps1"
 
-# ============================================================
-# デスクトップショートカット作成
-# ============================================================
-Write-Info "デスクトップショートカットを作成中..."
-
-$WScriptShell = New-Object -ComObject WScript.Shell
-$Desktop = [System.Environment]::GetFolderPath("Desktop")
-$Shortcut = $WScriptShell.CreateShortcut("$Desktop\LM Light.lnk")
-$Shortcut.TargetPath = "powershell.exe"
-$Shortcut.Arguments = "-ExecutionPolicy Bypass -File `"$INSTALL_DIR\start.ps1`""
-$Shortcut.WorkingDirectory = $INSTALL_DIR
-$Shortcut.Description = "LM Light - Lightweight LLM Management Tool"
-$Shortcut.Save()
-
-Write-Success "デスクトップショートカットを作成しました: $Desktop\LM Light.lnk"
-
-# スタートメニュー登録
-$StartMenu = [System.Environment]::GetFolderPath("Programs")
-$StartShortcut = $WScriptShell.CreateShortcut("$StartMenu\LM Light.lnk")
-$StartShortcut.TargetPath = "powershell.exe"
-$StartShortcut.Arguments = "-ExecutionPolicy Bypass -File `"$INSTALL_DIR\start.ps1`""
-$StartShortcut.WorkingDirectory = $INSTALL_DIR
-$StartShortcut.Description = "LM Light - Lightweight LLM Management Tool"
-$StartShortcut.Save()
-
-Write-Success "スタートメニューに登録しました"
-
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════╗" -ForegroundColor Green
 Write-Host "║     LM Light のインストールが完了しました！          ║" -ForegroundColor Green

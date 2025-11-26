@@ -6,7 +6,7 @@
 
 ✅ **軽量** - わずか60MBのダウンロード、110MBのインストールサイズ
 ⚡ **高速** - 3秒で起動、200MBのメモリ使用量
-🎯 **シンプル** - ワンコマンドでインストール、デスクトップアプリとして起動
+🎯 **シンプル** - ワンコマンドでインストール、すぐに起動
 🔒 **プライバシー** - 完全ローカル実行、データは外部送信なし
 
 ## インストール
@@ -49,15 +49,14 @@ curl -fsSL https://raw.githubusercontent.com/lmlight-app/lmlight/main/scripts/in
 
 ### ネイティブ版
 
-**コマンドライン:**
 ```bash
 ~/.local/lmlight/start.sh
 ```
 
-**デスクトップアプリ:**
-- **Windows:** デスクトップまたはスタートメニューから「LM Light」
-- **macOS:** `~/Applications/LM Light.app`
-- **Linux:** アプリケーションメニューから「LM Light」を検索
+**Windows:**
+```powershell
+& "$env:LOCALAPPDATA\lmlight\start.ps1"
+```
 
 ### アクセス
 
@@ -89,15 +88,11 @@ curl -fsSL https://raw.githubusercontent.com/lmlight-app/lmlight/main/scripts/in
 **Windows:**
 ```powershell
 Remove-Item -Recurse -Force "$env:LOCALAPPDATA\lmlight"
-Remove-Item "$env:USERPROFILE\Desktop\LM Light.lnk"
-Remove-Item "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\LM Light.lnk"
 ```
 
 **macOS / Linux:**
 ```bash
 rm -rf ~/.local/lmlight
-# macOS: rm -rf ~/Applications/LM\ Light.app
-# Linux: rm -f ~/.local/share/applications/lmlight.desktop
 ```
 
 ## 比較
