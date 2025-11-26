@@ -13,6 +13,11 @@
 
 ### ネイティブ版（推奨）
 
+**Windows:**
+```powershell
+irm https://raw.githubusercontent.com/lmlight-app/lmlight/main/scripts/install-windows.ps1 | iex
+```
+
 **macOS:**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/lmlight-app/lmlight/main/scripts/install-macos.sh | bash
@@ -50,6 +55,7 @@ curl -fsSL https://raw.githubusercontent.com/lmlight-app/lmlight/main/scripts/in
 ```
 
 **デスクトップアプリ:**
+- **Windows:** デスクトップまたはスタートメニューから「LM Light」
 - **macOS:** `~/Applications/LM Light.app`
 - **Linux:** アプリケーションメニューから「LM Light」を検索
 
@@ -63,6 +69,11 @@ curl -fsSL https://raw.githubusercontent.com/lmlight-app/lmlight/main/scripts/in
 
 同じインストールコマンドを再実行するだけでOK:
 
+```powershell
+# Windows
+irm https://raw.githubusercontent.com/lmlight-app/lmlight/main/scripts/install-windows.ps1 | iex
+```
+
 ```bash
 # macOS
 curl -fsSL https://raw.githubusercontent.com/lmlight-app/lmlight/main/scripts/install-macos.sh | bash
@@ -75,6 +86,14 @@ curl -fsSL https://raw.githubusercontent.com/lmlight-app/lmlight/main/scripts/in
 
 ## アンインストール
 
+**Windows:**
+```powershell
+Remove-Item -Recurse -Force "$env:LOCALAPPDATA\lmlight"
+Remove-Item "$env:USERPROFILE\Desktop\LM Light.lnk"
+Remove-Item "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\LM Light.lnk"
+```
+
+**macOS / Linux:**
 ```bash
 rm -rf ~/.local/lmlight
 # macOS: rm -rf ~/Applications/LM\ Light.app
