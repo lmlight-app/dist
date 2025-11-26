@@ -1,0 +1,99 @@
+# =========================
+# LM Light .gitignore
+# =========================
+
+# ----- Python -----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Nuitka build artifacts
+*.build/
+*.dist/
+*.onefile-build/
+main.dist/
+main.build/
+
+# ----- Node.js -----
+node_modules/
+.npm
+*.tgz
+.yarn-integrity
+
+# ----- Next.js -----
+.next/
+out/
+
+# ----- IDE -----
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ----- Logs -----
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ----- Environment -----
+.env
+.env.local
+.env.*.local
+*.local
+
+# ----- License (sensitive) -----
+*.lic
+license.lic
+
+# ----- Binary builds -----
+bin/
+*.bin
+*.exe
+*.dll
+*.dylib
+
+# ----- Archives (large files) -----
+archives/
+
+# ----- Database -----
+*.db
+*.sqlite
+*.sqlite3
+prisma/*.db
+
+# ----- Temporary -----
+tmp/
+temp/
+.tmp/
+*.tmp
+
+# ----- OS -----
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ----- Test/Coverage -----
+coverage/
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+.nox/
+
+# ----- Misc -----
+*.bak
+*.backup
