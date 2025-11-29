@@ -105,6 +105,15 @@ if ! command -v node &>/dev/null; then
 fi
 success "Node.js: $(node -v)"
 
+# Tesseract OCR (オプション: 画像OCR用)
+if ! command -v tesseract &>/dev/null; then
+    info "Tesseract OCR をインストール中 (画像OCR用)..."
+    $NEED_SUDO apt install -y tesseract-ocr tesseract-ocr-jpn tesseract-ocr-eng > /dev/null 2>&1 || true
+fi
+if command -v tesseract &>/dev/null; then
+    success "Tesseract OCR: $(tesseract --version 2>&1 | head -1)"
+fi
+
 # ============================================================
 # ステップ 3: PostgreSQL セットアップ
 # ============================================================

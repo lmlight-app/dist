@@ -112,6 +112,14 @@ if (Get-Command ollama -ErrorAction SilentlyContinue) {
     $MISSING_DEPS += "ollama"
 }
 
+# Tesseract OCR チェック (オプション: 画像OCR用)
+if (Get-Command tesseract -ErrorAction SilentlyContinue) {
+    Write-Success "Tesseract OCR が見つかりました (画像OCR用)"
+} else {
+    Write-Warn "Tesseract OCR が見つかりません (オプション: 画像OCR用)"
+    $MISSING_DEPS += "tesseract"
+}
+
 # winget で依存関係をインストール（オプション）
 if ($MISSING_DEPS.Count -gt 0 -and $isAdmin) {
     Write-Info "不足している依存関係を自動インストールしますか？ (Y/n)"
@@ -130,6 +138,10 @@ if ($MISSING_DEPS.Count -gt 0 -and $isAdmin) {
                 "ollama" {
                     Write-Info "Ollama をインストール中..."
                     winget install -e --id Ollama.Ollama --silent --accept-package-agreements --accept-source-agreements
+                }
+                "tesseract" {
+                    Write-Info "Tesseract OCR をインストール中..."
+                    Write-Warn "Tesseract は手動インストールが必要です: https://github.com/UB-Mannheim/tesseract/wiki"
                 }
             }
         }
@@ -436,6 +448,7 @@ if ($MISSING_DEPS.Count -gt 0) {
     if ($MISSING_DEPS -contains "nodejs") { Write-Host "    winget install OpenJS.NodeJS.LTS" }
     if ($MISSING_DEPS -contains "postgresql") { Write-Host "    winget install PostgreSQL.PostgreSQL" }
     if ($MISSING_DEPS -contains "ollama") { Write-Host "    winget install Ollama.Ollama" }
+    if ($MISSING_DEPS -contains "tesseract") { Write-Host "    Tesseract: https://github.com/UB-Mannheim/tesseract/wiki  # オプション: 画像OCR用" }
     Write-Host ""
 }
 

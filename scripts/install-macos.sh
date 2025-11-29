@@ -111,6 +111,13 @@ else
     MISSING_DEPS+=("postgresql")
 fi
 
+if command -v tesseract &>/dev/null; then
+    success "Tesseract OCR が見つかりました (画像OCR用)"
+else
+    warn "Tesseract OCR が見つかりません (オプション: 画像OCR用)"
+    MISSING_DEPS+=("tesseract")
+fi
+
 # ============================================================
 # ステップ 3: PostgreSQL セットアップ
 # ============================================================
@@ -456,6 +463,7 @@ if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
     [[ "${MISSING_DEPS[*]}" =~ "nodejs" ]] && echo "    brew install node"
     [[ "${MISSING_DEPS[*]}" =~ "postgresql" ]] && echo "    brew install postgresql@16 && brew services start postgresql@16"
     [[ "${MISSING_DEPS[*]}" =~ "ollama" ]] && echo "    brew install ollama"
+    [[ "${MISSING_DEPS[*]}" =~ "tesseract" ]] && echo "    brew install tesseract tesseract-lang  # オプション: 画像OCR用"
     echo ""
 fi
 
