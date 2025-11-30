@@ -1,10 +1,9 @@
 #!/bin/bash
 # LM Light Docker Installer
-# Usage: curl -fsSL https://raw.githubusercontent.com/lmlight-app/lmlight/main/scripts/install-docker.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/lmlight-app/dist/main/scripts/install-docker.sh | bash
 
 set -e
 
-REPO_URL="https://github.com/lmlight-app/lmlight"
 INSTALL_DIR="${LMLIGHT_INSTALL_DIR:-$HOME/.local/lmlight}"
 
 info() { echo -e "\033[1;34m[INFO]\033[0m $1"; }
@@ -41,23 +40,83 @@ fi
 mkdir -p "$INSTALL_DIR"
 cd "$INSTALL_DIR"
 
-# Download docker-compose.yml
-info "Downloading docker-compose.yml..."
-curl -fsSL "$REPO_URL/raw/main/docker-compose.yml" -o docker-compose.yml
+# Download and load Docker images
+BASE_URL="${LMLIGHT_BASE_URL:-https://github.com/lmlight-app/dist/releases/latest/download}"
 
-# Download Dockerfiles
-info "Downloading Dockerfiles..."
-mkdir -p api-license web
-curl -fsSL "$REPO_URL/raw/main/api-license/Dockerfile" -o api-license/Dockerfile
-curl -fsSL "$REPO_URL/raw/main/web/Dockerfile" -o web/Dockerfile
+info "Downloading API image..."
+curl -fsSL "$BASE_URL/lmlight-api-docker.tar.gz" | docker load
 
-# Create .env file
-info "Creating .env file..."
-cat > .env << 'EOF'
+info "Downloading Web image..."
+curl -fsSL "$BASE_URL/lmlight-web-docker.tar.gz" | docker load
+
+# Create docker-compose.yml
+info "Creating docker-compose.yml..."
+cat > docker-compose.yml << 'COMPOSE'
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: lmlight
+      POSTGRES_PASSWORD: lmlight
+      POSTGRES_DB: lmlight
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lmlight"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    image: lmlight-api
+    ports:
+      - "${API_PORT:-8000}:8000"
+    env_file: .env
+    volumes:
+      - ./license.lic:/app/license.lic:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    image: lmlight-web
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    env_file: .env
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+COMPOSE
+
+# Create .env file (only if not exists)
+if [ ! -f .env ]; then
+    info "Creating .env file..."
+    cat > .env << 'EOF'
+# LM Light Configuration (Docker)
+
+# PostgreSQL (container)
 DATABASE_URL=postgresql://lmlight:lmlight@postgres:5432/lmlight
-NEXTAUTH_SECRET=change-this-to-a-secure-random-string
+
+# Ollama (host machine)
+OLLAMA_BASE_URL=http://host.docker.internal:11434
+
+# License
+LICENSE_PATH=/app/license.lic
+
+# NextAuth
+NEXTAUTH_SECRET=randomsecret123
 NEXTAUTH_URL=http://localhost:3000
+
+# API
+NEXT_PUBLIC_API_URL=http://localhost:8000
+API_PORT=8000
+
+# Web
+WEB_PORT=3000
 EOF
+fi
 
 # Create start script
 cat > start.sh << 'EOF'
@@ -99,12 +158,10 @@ echo "============================================================"
 echo ""
 echo "  Install location: $INSTALL_DIR"
 echo ""
-echo "  To start:"
-echo "    cd $INSTALL_DIR && ./start.sh"
+echo "  Next steps:"
+echo "    1. Place license.lic in $INSTALL_DIR"
+echo "    2. Start Ollama: ollama serve"
+echo "    3. Start LM Light: $INSTALL_DIR/start.sh"
 echo ""
-echo "  To stop:"
-echo "    cd $INSTALL_DIR && ./stop.sh"
-echo ""
-echo "  Note: Make sure Ollama is running before starting LM Light."
-echo "        ollama serve"
+echo "  Default login: admin@local / admin123"
 echo ""

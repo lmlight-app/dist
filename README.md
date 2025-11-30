@@ -1,108 +1,144 @@
 # LM Light
 
-🚀 **超軽量・高速なLLM管理ツール** - ローカルLLMを簡単に管理・利用できるWebアプリケーション
-
-## 特徴
-
-✅ **軽量** - わずか60MBのダウンロード、110MBのインストールサイズ
-⚡ **高速** - 3秒で起動、200MBのメモリ使用量
-🎯 **シンプル** - ワンコマンドでインストール、すぐに起動
-🔒 **プライバシー** - 完全ローカル実行、データは外部送信なし
+軽量・高速なローカルLLM管理ツール
 
 ## インストール
 
-### ネイティブ版（推奨）
-
-**Windows:**
-```powershell
-irm https://raw.githubusercontent.com/lmlight-app/lmlight/main/scripts/install-windows.ps1 | iex
-```
-
 **macOS:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/lmlight-app/lmlight/main/scripts/install-macos.sh | bash
+curl -fsSL https://raw.githubusercontent.com/lmlight-app/dist/main/scripts/install-macos.sh | bash
 ```
 
 **Linux:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/lmlight-app/lmlight/main/scripts/install-linux.sh | bash
+curl -fsSL https://raw.githubusercontent.com/lmlight-app/dist/main/scripts/install-linux.sh | bash
 ```
 
-### Docker版
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/lmlight-app/lmlight/main/scripts/install-docker.sh | bash
+**Windows:**
+```powershell
+irm https://raw.githubusercontent.com/lmlight-app/dist/main/scripts/install-windows.ps1 | iex
 ```
 
-## 必要条件
+インストール先: `~/.local/lmlight` (Windows: `%LOCALAPPDATA%\lmlight`)
 
-### ネイティブ版
-- PostgreSQL 16+ (pgvector対応)
-- Ollama
+**Docker:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/lmlight-app/dist/main/scripts/install-docker.sh | bash
+```
 
-*Node.jsは不要です - フロントエンドに同梱されています*
+または手動で:
+```bash
+# イメージ取得
+curl -fSL https://github.com/lmlight-app/dist/releases/latest/download/lmlight-api-docker.tar.gz | docker load
+curl -fSL https://github.com/lmlight-app/dist/releases/latest/download/lmlight-web-docker.tar.gz | docker load
 
-### Docker版
-- Docker & Docker Compose
+# 起動
+docker run -d --name lmlight-api -p 8000:8000 --env-file .env lmlight-api
+docker run -d --name lmlight-web -p 3000:3000 --env-file .env lmlight-web
+```
 
-## 起動方法
+## 環境構築
 
-### ネイティブ版
+### 必要な依存関係
+
+| 依存関係 | macOS | Linux (Ubuntu/Debian) |
+|---------|-------|----------------------|
+| Node.js 18+ | `brew install node` | `sudo apt install nodejs` |
+| PostgreSQL 16+ | `brew install postgresql@16` | `sudo apt install postgresql` |
+| Ollama | `brew install ollama` | `curl -fsSL https://ollama.com/install.sh \| sh` |
+
+### データベース起動
 
 ```bash
+brew services start postgresql@16  # macOS
+sudo systemctl start postgresql    # Linux
+```
+
+※ DB/ユーザー作成は初回起動時にPrismaが自動実行
+
+### Ollamaモデル
+
+```bash
+ollama pull gemma3:4b           # チャット用
+ollama pull embeddinggemma      # RAG用 (推奨)
+```
+
+### 設定ファイル (.env)
+
+インストール後、`~/.local/lmlight/.env` を編集:
+
+```env
+# PostgreSQL
+DATABASE_URL=postgresql://lmlight:lmlight@localhost:5432/lmlight
+
+# Ollama
+OLLAMA_BASE_URL=http://localhost:11434
+
+# License
+LICENSE_PATH=./license.lic
+
+# NextAuth
+NEXTAUTH_SECRET=randomsecret123
+NEXTAUTH_URL=http://localhost:3000
+
+# API
+NEXT_PUBLIC_API_URL=http://localhost:8000
+API_PORT=8000
+
+# Web
+WEB_PORT=3000
+```
+
+### ライセンス
+
+`license.lic` を `~/.local/lmlight/` に配置
+
+## 起動・停止
+
+```bash
+# 起動
 ~/.local/lmlight/start.sh
+
+# 停止
+~/.local/lmlight/stop.sh
 ```
 
 **Windows:**
 ```powershell
 & "$env:LOCALAPPDATA\lmlight\start.ps1"
+& "$env:LOCALAPPDATA\lmlight\stop.ps1"
 ```
 
-### アクセス
+## アクセス
 
-- Web UI: http://localhost:3000
+- Web: http://localhost:3000
 - API: http://localhost:8000
-- ログイン: `admin@localhost.local` / `admin123`
+
+デフォルトログイン: `admin@local` / `admin123`
 
 ## アップデート
 
-同じインストールコマンドを再実行するだけでOK:
-
-```powershell
-# Windows
-irm https://raw.githubusercontent.com/lmlight-app/lmlight/main/scripts/install-windows.ps1 | iex
-```
-
-```bash
-# macOS
-curl -fsSL https://raw.githubusercontent.com/lmlight-app/lmlight/main/scripts/install-macos.sh | bash
-
-# Linux
-curl -fsSL https://raw.githubusercontent.com/lmlight-app/lmlight/main/scripts/install-linux.sh | bash
-```
-
-既存のデータは保持されます。
+同じインストールコマンドを再実行 (データは保持)
 
 ## アンインストール
 
-**Windows:**
-```powershell
-Remove-Item -Recurse -Force "$env:LOCALAPPDATA\lmlight"
-```
-
-**macOS / Linux:**
 ```bash
-rm -rf ~/.local/lmlight
+rm -rf ~/.local/lmlight  # macOS/Linux
 ```
 
-## 比較
+```powershell
+Remove-Item -Recurse -Force "$env:LOCALAPPDATA\lmlight"  # Windows
+```
 
-| 項目 | LM Light | Docker版 | Open WebUI |
-|------|----------|----------|------------|
-| ダウンロードサイズ | 60MB | 500MB+ | 2GB+ |
-| メモリ使用量 | 200MB | 500MB+ | 1GB+ |
-| 起動時間 | 3秒 | 10-20秒 | 30秒+ |
+## ディレクトリ構造
 
-## ライセンス
-
-MIT License
+```
+~/.local/lmlight/
+├── api             # APIバイナリ
+├── web/            # Webフロントエンド
+├── .env            # 設定ファイル
+├── license.lic     # ライセンス
+├── start.sh        # 起動
+├── stop.sh         # 停止
+└── logs/           # ログ
+```

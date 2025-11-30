@@ -1,10 +1,10 @@
 # LM Light インストーラー for Windows
-# 使い方: irm https://raw.githubusercontent.com/lmlight-app/lmlight/main/scripts/install-windows.ps1 | iex
+# 使い方: irm https://raw.githubusercontent.com/lmlight-app/dist/main/scripts/install-windows.ps1 | iex
 
 $ErrorActionPreference = "Stop"
 
 # 設定
-$BASE_URL = if ($env:LMLIGHT_BASE_URL) { $env:LMLIGHT_BASE_URL } else { "https://github.com/lmlight-app/lmlight/releases/latest/download" }
+$BASE_URL = if ($env:LMLIGHT_BASE_URL) { $env:LMLIGHT_BASE_URL } else { "https://github.com/lmlight-app/dist/releases/latest/download" }
 $INSTALL_DIR = if ($env:LMLIGHT_INSTALL_DIR) { $env:LMLIGHT_INSTALL_DIR } else { "$env:LOCALAPPDATA\lmlight" }
 $ARCH = "amd64"  # Windows は x64 のみサポート
 
@@ -340,7 +340,7 @@ Write-Info "ステップ 5/5: 設定を作成中..."
 # .env ファイル作成
 $NEXTAUTH_SECRET = -join ((65..90) + (97..122) + (48..57) | Get-Random -Count 32 | ForEach-Object {[char]$_})
 $ENV_CONTENT = @"
-DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@localhost:5432/$DB_NAME
+DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}
 OLLAMA_BASE_URL=http://localhost:11434
 NEXTAUTH_SECRET=$NEXTAUTH_SECRET
 NEXTAUTH_URL=http://localhost:3000
