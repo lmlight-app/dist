@@ -28,15 +28,18 @@ on doToggle()
     if isRunning then
         display notification "Stopping..." with title "LM Light"
         try
-            do shell script quoted form of (installDir & "/stop.sh")
+            do shell script "/bin/zsh -i -c " & quoted form of ("source " & installDir & "/stop.sh")
         end try
         display notification "Stopped" with title "LM Light"
     else
         display notification "Starting..." with title "LM Light"
         try
-            do shell script quoted form of (installDir & "/start.sh")
+            do shell script "/bin/zsh -i -c " & quoted form of ("source " & installDir & "/start.sh")
+        on error errMsg
+            display dialog "Start failed: " & errMsg buttons {"OK"} default button "OK"
+            return
         end try
-        delay 2
+        delay 3
         display notification "Started: http://localhost:3000" with title "LM Light"
         do shell script "open http://localhost:3000"
     end if
@@ -45,7 +48,7 @@ end doToggle
 on quit
     set installDir to (system attribute "HOME") & "/.local/lmlight"
     try
-        do shell script quoted form of (installDir & "/stop.sh")
+        do shell script "/bin/zsh -i -c " & quoted form of ("source " & installDir & "/stop.sh")
     end try
     continue quit
 end quit

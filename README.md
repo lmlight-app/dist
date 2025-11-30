@@ -129,6 +129,24 @@ WEB_PORT=3000
 & "$env:LOCALAPPDATA\lmlight\stop.ps1"
 ```
 
+### デスクトップランチャー (オプション)
+
+インストーラーが自動作成:
+- **macOS**: `/Applications/LM Light Start.app`, `/Applications/LM Light Stop.app`
+- **Windows**: スタートメニュー → LM Light フォルダ
+
+**GUIトグルアプリ (macOS)**
+
+クリックで起動/停止を切り替え、ブラウザを自動で開くアプリ:
+
+```bash
+# ビルド
+cd scripts/launcher/macos
+./build-app.sh
+
+# 生成された LM Light.app を Applications にドラッグ
+```
+
 ## アクセス
 
 - Web: http://localhost:3000
