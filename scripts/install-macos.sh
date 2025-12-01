@@ -64,6 +64,7 @@ if command -v psql &>/dev/null; then
 DO $$ BEGIN CREATE TYPE "UserRole" AS ENUM ('ADMIN', 'USER'); EXCEPTION WHEN duplicate_object THEN null; END $$;
 DO $$ BEGIN CREATE TYPE "UserStatus" AS ENUM ('ACTIVE', 'INACTIVE'); EXCEPTION WHEN duplicate_object THEN null; END $$;
 DO $$ BEGIN CREATE TYPE "MessageRole" AS ENUM ('USER', 'ASSISTANT', 'SYSTEM'); EXCEPTION WHEN duplicate_object THEN null; END $$;
+DO $$ BEGIN CREATE TYPE "ShareType" AS ENUM ('PRIVATE', 'TAG'); EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- Tables
 CREATE TABLE IF NOT EXISTS "User" (
@@ -78,6 +79,42 @@ CREATE TABLE IF NOT EXISTS "User" (
     "lastLoginAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS "UserSettings" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL UNIQUE,
+    "historyLimit" INTEGER NOT NULL DEFAULT 2,
+    "temperature" DOUBLE PRECISION NOT NULL DEFAULT 0.7,
+    "maxTokens" INTEGER NOT NULL DEFAULT 2048,
+    "numCtx" INTEGER NOT NULL DEFAULT 8192,
+    "topP" DOUBLE PRECISION NOT NULL DEFAULT 0.9,
+    "topK" INTEGER NOT NULL DEFAULT 40,
+    "repeatPenalty" DOUBLE PRECISION NOT NULL DEFAULT 1.1,
+    "reasoningMode" TEXT NOT NULL DEFAULT 'normal',
+    "ragTopK" INTEGER NOT NULL DEFAULT 5,
+    "ragMinSimilarity" DOUBLE PRECISION NOT NULL DEFAULT 0.45,
+    "embeddingModel" TEXT NOT NULL DEFAULT 'nomic-embed-text:latest',
+    "chunkSize" INTEGER NOT NULL DEFAULT 600,
+    "chunkOverlap" INTEGER NOT NULL DEFAULT 100,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS "Tag" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL UNIQUE,
+    "description" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS "UserTag" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "tagId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE ("userId", "tagId")
 );
 
 CREATE TABLE IF NOT EXISTS "Account" (
@@ -110,25 +147,10 @@ CREATE TABLE IF NOT EXISTS "Bot" (
     "userId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
-    "systemPrompt" TEXT,
-    "model" TEXT,
-    "isPublic" BOOLEAN DEFAULT false,
+    "shareType" "ShareType" NOT NULL DEFAULT 'PRIVATE',
+    "shareTagId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS "Tag" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "name" TEXT NOT NULL UNIQUE,
-    "color" TEXT DEFAULT '#3B82F6',
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS "_BotToTag" (
-    "A" TEXT NOT NULL,
-    "B" TEXT NOT NULL,
-    PRIMARY KEY ("A", "B")
 );
 
 CREATE TABLE IF NOT EXISTS "Chat" (
@@ -165,8 +187,14 @@ CREATE TABLE IF NOT EXISTS pgvector.embeddings (
 );
 
 -- Indexes
+CREATE INDEX IF NOT EXISTS "UserTag_userId_idx" ON "UserTag"("userId");
+CREATE INDEX IF NOT EXISTS "UserTag_tagId_idx" ON "UserTag"("tagId");
 CREATE INDEX IF NOT EXISTS "Bot_userId_idx" ON "Bot"("userId");
+CREATE INDEX IF NOT EXISTS "Bot_shareTagId_idx" ON "Bot"("shareTagId");
+CREATE INDEX IF NOT EXISTS "Chat_sessionId_idx" ON "Chat"("sessionId");
+CREATE INDEX IF NOT EXISTS "Chat_userId_model_idx" ON "Chat"("userId", "model");
 CREATE INDEX IF NOT EXISTS "Chat_userId_idx" ON "Chat"("userId");
+CREATE INDEX IF NOT EXISTS "Chat_botId_idx" ON "Chat"("botId");
 CREATE INDEX IF NOT EXISTS "Message_chatId_createdAt_idx" ON "Message"("chatId", "createdAt");
 CREATE INDEX IF NOT EXISTS idx_bot_user ON pgvector.embeddings (bot_id, user_id);
 CREATE INDEX IF NOT EXISTS idx_document ON pgvector.embeddings (document_id);
