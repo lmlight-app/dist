@@ -94,8 +94,8 @@ DATABASE_URL=postgresql://lmlight:lmlight@localhost:5432/lmlight
 # Ollama
 OLLAMA_BASE_URL=http://localhost:11434
 
-# License
-LICENSE_PATH=./license.lic
+# License (absolute path for Nuitka binary)
+LICENSE_FILE_PATH=~/.local/lmlight/license.lic
 
 # NextAuth
 NEXTAUTH_SECRET=randomsecret123
