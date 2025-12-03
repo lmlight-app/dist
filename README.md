@@ -48,16 +48,7 @@ docker run -d --name lmlight-web -p 3000:3000 --env-file .env lmlight-web
 
 ### サービス起動
 
-```bash
-# macOS
-brew services start postgresql@16
-
-# Linux
-sudo systemctl start postgresql && sudo systemctl enable postgresql
-
-# Windows (管理者権限)
-net start postgresql-x64-16
-```
+PostgreSQL と Ollama は `start.sh` / `stop.sh` で自動的に起動・停止されます。
 
 ※ データベース・ユーザー・テーブル作成はインストーラーが自動実行します
 
@@ -78,36 +69,29 @@ npx prisma db seed
 
 ### Ollamaモデル
 
+[Ollama モデル一覧](https://ollama.com/search) から好みのモデルを選択:
+
 ```bash
-ollama pull gemma3:4b           # チャット用
-ollama pull embeddinggemma      # RAG用 (推奨)
+ollama pull <model_name>        # 例: gemma3:4b, llama3.2, qwen2.5 など
+ollama pull nomic-embed-text    # RAG用埋め込みモデル (推奨)
 ```
 
 ### 設定ファイル (.env)
 
 インストール後、`~/.local/lmlight/.env` を編集:
 
-```env
-# PostgreSQL
-DATABASE_URL=postgresql://lmlight:lmlight@localhost:5432/lmlight
+| 環境変数 | 説明 | デフォルト |
+|---------|------|-----------|
+| `DATABASE_URL` | PostgreSQL接続URL | `postgresql://<user>:<password>@localhost:5432/<database>` |
+| `OLLAMA_BASE_URL` | OllamaサーバーURL | `http://localhost:11434` |
+| `LICENSE_FILE_PATH` | ライセンスファイルのパス | `~/.local/lmlight/license.lic` |
+| `NEXTAUTH_SECRET` | セッション暗号化キー (任意の文字列) | - |
+| `NEXTAUTH_URL` | WebアプリのURL | `http://localhost:3000` |
+| `NEXT_PUBLIC_API_URL` | APIサーバーURL | `http://localhost:8000` |
+| `API_PORT` | APIポート | `8000` |
+| `WEB_PORT` | Webポート | `3000` |
 
-# Ollama
-OLLAMA_BASE_URL=http://localhost:11434
-
-# License (absolute path for Nuitka binary)
-LICENSE_FILE_PATH=~/.local/lmlight/license.lic
-
-# NextAuth
-NEXTAUTH_SECRET=randomsecret123
-NEXTAUTH_URL=http://localhost:3000
-
-# API
-NEXT_PUBLIC_API_URL=http://localhost:8000
-API_PORT=8000
-
-# Web
-WEB_PORT=3000
-```
+※ インストーラーが自動設定します。手動変更が必要な場合のみ編集してください。
 
 ### ライセンス
 
@@ -129,30 +113,14 @@ WEB_PORT=3000
 & "$env:LOCALAPPDATA\lmlight\stop.ps1"
 ```
 
-### デスクトップランチャー (オプション)
-
-インストーラーが自動作成:
-- **macOS**: `/Applications/LM Light Start.app`, `/Applications/LM Light Stop.app`
-- **Windows**: スタートメニュー → LM Light フォルダ
-
-**GUIトグルアプリ (macOS)**
-
-クリックで起動/停止を切り替え、ブラウザを自動で開くアプリ:
-
-```bash
-# ビルド
-cd scripts/launcher/macos
-./build-app.sh
-
-# 生成された LM Light.app を Applications にドラッグ
-```
-
 ## アクセス
 
 - Web: http://localhost:3000
 - API: http://localhost:8000
 
 デフォルトログイン: `admin@local` / `admin123`
+
+※ 初回ログイン後、パスワードを変更してください
 
 ## アップデート
 
