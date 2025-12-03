@@ -308,6 +308,11 @@ done
 osascript -e 'display alert "LM Light" message "Failed to start. Check ~/.local/lmlight/logs/"'
 APPEOF
 chmod +x "$APP_DIR/Contents/MacOS/LM Light"
+
+# Download and install icon
+mkdir -p "$APP_DIR/Contents/Resources"
+curl -fSL "$BASE_URL/LMLight.icns" -o "$APP_DIR/Contents/Resources/AppIcon.icns" 2>/dev/null || true
+
 cat > "$APP_DIR/Contents/Info.plist" << 'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -321,10 +326,17 @@ cat > "$APP_DIR/Contents/Info.plist" << 'EOF'
     <string>app.lmlight</string>
     <key>CFBundleVersion</key>
     <string>1.0</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
 </dict>
 </plist>
 EOF
 
+touch "$APP_DIR"  # Refresh icon cache
 echo "App created: /Applications/LM Light.app"
 
 echo "Done. Edit $INSTALL_DIR/.env then run: $INSTALL_DIR/start.sh"
