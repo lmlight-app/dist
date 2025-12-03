@@ -254,8 +254,12 @@ chmod +x "$INSTALL_DIR/start.sh"
 
 cat > "$INSTALL_DIR/stop.sh" << 'EOF'
 #!/bin/bash
-pkill -f "lmlight.*api" 2>/dev/null
-pkill -f "node.*server.js" 2>/dev/null
+# Kill start.sh first (which will trigger its trap to kill API/Web)
+pkill -f "lmlight/start\.sh" 2>/dev/null
+sleep 1
+# Clean up any remaining processes
+pkill -f "\./api$" 2>/dev/null
+pkill -f "lmlight/web.*server\.js" 2>/dev/null
 echo "Stopped"
 EOF
 chmod +x "$INSTALL_DIR/stop.sh"
@@ -263,10 +267,36 @@ chmod +x "$INSTALL_DIR/stop.sh"
 # Create .app bundles in /Applications
 APP_DIR="/Applications/LM Light.app"
 mkdir -p "$APP_DIR/Contents/MacOS"
-cat > "$APP_DIR/Contents/MacOS/LM Light" << EOF
+cat > "$APP_DIR/Contents/MacOS/LM Light" << 'APPEOF'
 #!/bin/bash
-osascript -e 'tell app "Terminal" to do script "$INSTALL_DIR/start.sh"'
-EOF
+INSTALL_DIR="$HOME/.local/lmlight"
+cd "$INSTALL_DIR"
+
+# Load .env
+set -a; [ -f .env ] && source .env; set +a
+
+# Check if already running
+if curl -s http://localhost:${API_PORT:-8000}/health >/dev/null 2>&1; then
+    open "http://localhost:${WEB_PORT:-3000}"
+    exit 0
+fi
+
+# Start services in background
+"$INSTALL_DIR/start.sh" &
+
+# Wait for API to be ready (max 30 sec)
+for i in {1..30}; do
+    if curl -s http://localhost:${API_PORT:-8000}/health >/dev/null 2>&1; then
+        sleep 1
+        open "http://localhost:${WEB_PORT:-3000}"
+        osascript -e 'display notification "LM Light is running" with title "LM Light"'
+        exit 0
+    fi
+    sleep 1
+done
+
+osascript -e 'display alert "LM Light" message "Failed to start. Check ~/.local/lmlight/logs/"'
+APPEOF
 chmod +x "$APP_DIR/Contents/MacOS/LM Light"
 cat > "$APP_DIR/Contents/Info.plist" << 'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
