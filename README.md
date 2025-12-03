@@ -1,4 +1,4 @@
-# LM Light 利用マニュアル
+# LM Light 利用マニュアル(Nuikta版)
 
 ## インストール
 
