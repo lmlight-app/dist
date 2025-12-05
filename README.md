@@ -55,20 +55,28 @@ PostgreSQL と Ollama は `start.sh` / `stop.sh` で自動的に起動・停止�
 
 ※ データベース・ユーザー・テーブル作成はインストーラーが自動実行します
 
-### 手動DBセットアップ (開発・トラブルシュート用)
+### 手動DBセットアップ
 
+インストーラーがDB作成・テーブル作成・初期ユーザー作成を自動実行します。
+問題が発生した場合は以下を実行:
+
+**macOS/Linux:**
 ```bash
-cd web
-
-# Prismaクライアント生成
-npx prisma generate
-
-# スキーマをDBに反映
-npx prisma db push
-
-# 初期データ投入 (admin@local / admin123)
-npx prisma db seed
+curl -fsSL https://raw.githubusercontent.com/lmlight-app/dist_v2/main/scripts/db_setup.sh | bash
 ```
+
+**Windows:**
+```powershell
+irm https://raw.githubusercontent.com/lmlight-app/dist_v2/main/scripts/db_setup.ps1 | iex
+```
+
+**DBリセット (⚠️ 全データ削除):**
+```bash
+psql -U postgres -c "DROP DATABASE lmlight;"
+# その後、上記のdb_setupを再実行 (adminユーザーのみ再作成)
+```
+
+※ 通常のアップデート（インストーラー再実行）では既存ユーザー・データは保持されます
 
 ### Ollamaモデル
 
