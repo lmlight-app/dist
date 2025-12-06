@@ -45,7 +45,7 @@ docker run -d --name lmlight-web -p 3000:3000 --env-file .env lmlight-web
 | 依存関係 | macOS | Linux (Ubuntu/Debian) | Windows |
 |---------|-------|----------------------|---------|
 | Node.js 18+ | `brew install node` | `sudo apt install nodejs npm` | `winget install OpenJS.NodeJS.LTS` |
-| PostgreSQL 16+ | `brew install postgresql@16` | `sudo apt install postgresql` | `winget install PostgreSQL.PostgreSQL` |
+| PostgreSQL 16+ | `brew install postgresql@16` | `sudo apt install postgresql` | winget install PostgreSQL.PostgreSQL.17` |
 | pgvector | `brew install pgvector` | `sudo apt install postgresql-16-pgvector` | [手動インストール](https://github.com/pgvector/pgvector#windows) |
 | Ollama | `brew install ollama` | `curl -fsSL https://ollama.com/install.sh \| sh` | `winget install Ollama.Ollama` |
 
