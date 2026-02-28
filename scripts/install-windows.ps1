@@ -472,6 +472,77 @@ Set-Content -Path "$INSTALL_DIR\scripts\stop.ps1" -Value $STOP_SCRIPT -Encoding 
 Copy-Item "$INSTALL_DIR\scripts\start.ps1" "$INSTALL_DIR\start.ps1"
 Copy-Item "$INSTALL_DIR\scripts\stop.ps1" "$INSTALL_DIR\stop.ps1"
 
+# トグルスクリプト作成（macOSと同様の動作）
+$TOGGLE_SCRIPT = @'
+# LM Light トグルスクリプト
+# 起動中ならStop、停止中ならStart
+
+$INSTALL_DIR = "$env:LOCALAPPDATA\lmlight"
+Set-Location $INSTALL_DIR
+
+# .env 読み込み
+$API_PORT = 8000
+$WEB_PORT = 3000
+if (Test-Path "$INSTALL_DIR\.env") {
+    Get-Content "$INSTALL_DIR\.env" | ForEach-Object {
+        if ($_ -match "^API_PORT=(.*)$") { $API_PORT = $matches[1] }
+        if ($_ -match "^WEB_PORT=(.*)$") { $WEB_PORT = $matches[1] }
+    }
+}
+
+# ヘルスチェック
+$isRunning = $false
+try {
+    $response = Invoke-WebRequest -Uri "http://localhost:$API_PORT/health" -UseBasicParsing -TimeoutSec 2 -ErrorAction Stop
+    $isRunning = $true
+} catch { }
+
+if ($isRunning) {
+    # 起動中 → 停止
+    & "$INSTALL_DIR\stop.ps1"
+
+    # トースト通知
+    [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+    $template = [Windows.UI.Notifications.ToastTemplateType]::ToastText01
+    $xml = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent($template)
+    $xml.GetElementsByTagName("text").Item(0).AppendChild($xml.CreateTextNode("LM Light stopped")) | Out-Null
+    $notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("LM Light")
+    $notifier.Show([Windows.UI.Notifications.ToastNotification]::new($xml))
+} else {
+    # 停止中 → 起動
+    Start-Process powershell -ArgumentList "-ExecutionPolicy Bypass -File `"$INSTALL_DIR\start.ps1`"" -WindowStyle Hidden
+
+    # API起動待ち (最大30秒)
+    $ready = $false
+    for ($i = 0; $i -lt 30; $i++) {
+        Start-Sleep -Seconds 1
+        try {
+            $response = Invoke-WebRequest -Uri "http://localhost:$API_PORT/health" -UseBasicParsing -TimeoutSec 2 -ErrorAction Stop
+            $ready = $true
+            break
+        } catch { }
+    }
+
+    if ($ready) {
+        Start-Sleep -Seconds 1
+        Start-Process "http://localhost:$WEB_PORT"
+
+        # トースト通知
+        [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+        $template = [Windows.UI.Notifications.ToastTemplateType]::ToastText01
+        $xml = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent($template)
+        $xml.GetElementsByTagName("text").Item(0).AppendChild($xml.CreateTextNode("LM Light is running")) | Out-Null
+        $notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("LM Light")
+        $notifier.Show([Windows.UI.Notifications.ToastNotification]::new($xml))
+    } else {
+        [System.Windows.MessageBox]::Show("Failed to start. Check $INSTALL_DIR\logs\", "LM Light")
+    }
+}
+'@
+
+Set-Content -Path "$INSTALL_DIR\scripts\toggle.ps1" -Value $TOGGLE_SCRIPT -Encoding UTF8
+Copy-Item "$INSTALL_DIR\scripts\toggle.ps1" "$INSTALL_DIR\toggle.ps1"
+
 Write-Host ""
 Write-Host "╔═══════════════════════════════════════════════════════╗" -ForegroundColor Green
 Write-Host "║     LM Light のインストールが完了しました！          ║" -ForegroundColor Green
@@ -496,6 +567,14 @@ New-Item -ItemType Directory -Force -Path $APP_FOLDER | Out-Null
 
 $WshShell = New-Object -ComObject WScript.Shell
 
+# メインのトグルショートカット（タスクバーにピン留め用）
+$ToggleShortcut = $WshShell.CreateShortcut("$APP_FOLDER\LM Light.lnk")
+$ToggleShortcut.TargetPath = "powershell.exe"
+$ToggleShortcut.Arguments = "-ExecutionPolicy Bypass -WindowStyle Hidden -File `"$INSTALL_DIR\toggle.ps1`""
+$ToggleShortcut.WorkingDirectory = $INSTALL_DIR
+$ToggleShortcut.Description = "Toggle LM Light (Start/Stop)"
+$ToggleShortcut.Save()
+
 $StartShortcut = $WshShell.CreateShortcut("$APP_FOLDER\LM Light Start.lnk")
 $StartShortcut.TargetPath = "powershell.exe"
 $StartShortcut.Arguments = "-ExecutionPolicy Bypass -File `"$INSTALL_DIR\start.ps1`""
@@ -511,6 +590,7 @@ $StopShortcut.Description = "Stop LM Light"
 $StopShortcut.Save()
 
 Write-Success "スタートメニューにショートカットを作成しました"
+Write-Host "  タスクバーにピン留め: スタートメニュー → LM Light → 右クリック → タスクバーにピン留め" -ForegroundColor Cyan
 
 Write-Host "起動: $INSTALL_DIR\start.ps1" -ForegroundColor Blue
 Write-Host "停止: $INSTALL_DIR\stop.ps1" -ForegroundColor Blue

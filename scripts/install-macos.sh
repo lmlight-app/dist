@@ -275,23 +275,15 @@ cd "$INSTALL_DIR"
 # Load .env
 set -a; [ -f .env ] && source .env; set +a
 
-# Check if already running
+# Simple toggle: running → stop, not running → start
 if curl -s http://localhost:${API_PORT:-8000}/health >/dev/null 2>&1; then
-    # Already running - ask to stop or open browser
-    CHOICE=$(osascript -e 'button returned of (display dialog "LM Light is running." buttons {"Open Browser", "Stop", "Cancel"} default button "Open Browser")')
-    case "$CHOICE" in
-        "Open Browser")
-            open "http://localhost:${WEB_PORT:-3000}"
-            ;;
-        "Stop")
-            "$INSTALL_DIR/stop.sh"
-            osascript -e 'display notification "LM Light stopped" with title "LM Light"'
-            ;;
-    esac
+    # Running → Stop
+    "$INSTALL_DIR/stop.sh"
+    osascript -e 'display notification "LM Light stopped" with title "LM Light"'
     exit 0
 fi
 
-# Not running - start services
+# Not running → Start
 "$INSTALL_DIR/start.sh" &
 
 # Wait for API to be ready (max 30 sec)
