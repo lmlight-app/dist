@@ -1,4 +1,7 @@
-# LM Light 利用マニュアル(Nuikta版)
+# LM Light 利用マニュアル (Nuitka版)
+
+> **Note**: Nuitkaビルドは一部環境で問題が発生する場合があります。
+> 推奨: [PyInstaller版 (dist_v2)](https://github.com/lmlight-app/dist_v2) をご利用ください。
 
 ## インストール
 
@@ -42,7 +45,7 @@ docker run -d --name lmlight-web -p 3000:3000 --env-file .env lmlight-web
 | 依存関係 | macOS | Linux (Ubuntu/Debian) | Windows |
 |---------|-------|----------------------|---------|
 | Node.js 18+ | `brew install node` | `sudo apt install nodejs npm` | `winget install OpenJS.NodeJS.LTS` |
-| PostgreSQL 16+ | `brew install postgresql@16` | `sudo apt install postgresql` | `winget install PostgreSQL.PostgreSQL` |
+| PostgreSQL 16+ | `brew install postgresql@16` | `sudo apt install postgresql` | winget install PostgreSQL.PostgreSQL.17` |
 | pgvector | `brew install pgvector` | `sudo apt install postgresql-16-pgvector` | [手動インストール](https://github.com/pgvector/pgvector#windows) |
 | Ollama | `brew install ollama` | `curl -fsSL https://ollama.com/install.sh \| sh` | `winget install Ollama.Ollama` |
 
@@ -52,20 +55,28 @@ PostgreSQL と Ollama は `start.sh` / `stop.sh` で自動的に起動・停止�
 
 ※ データベース・ユーザー・テーブル作成はインストーラーが自動実行します
 
-### 手動DBセットアップ (開発・トラブルシュート用)
+### 手動DBセットアップ
 
+インストーラーがDB作成・テーブル作成・初期ユーザー作成を自動実行します。
+問題が発生した場合は以下を実行:
+
+**macOS/Linux:**
 ```bash
-cd web
-
-# Prismaクライアント生成
-npx prisma generate
-
-# スキーマをDBに反映
-npx prisma db push
-
-# 初期データ投入 (admin@local / admin123)
-npx prisma db seed
+curl -fsSL https://raw.githubusercontent.com/lmlight-app/dist_v2/main/scripts/db_setup.sh | bash
 ```
+
+**Windows:**
+```powershell
+irm https://raw.githubusercontent.com/lmlight-app/dist_v2/main/scripts/db_setup.ps1 | iex
+```
+
+**DBリセット (⚠️ 全データ削除):**
+```bash
+psql -U postgres -c "DROP DATABASE lmlight;"
+# その後、上記のdb_setupを再実行 (adminユーザーのみ再作成)
+```
+
+※ 通常のアップデート（インストーラー再実行）では既存ユーザー・データは保持されます
 
 ### Ollamaモデル
 
